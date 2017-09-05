@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.locaris</groupId>
+    <artifactId>Algorithm</artifactId>
+    <version>2.00</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/gov.nist.math/jama -->
+        <dependency>
+            <groupId>gov.nist.math</groupId>
+            <artifactId>jama</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.ejml/dense64 -->
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>dense64</artifactId>
+            <version>0.30</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.ejml/core -->
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>core</artifactId>
+            <version>0.30</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.ejml/simple -->
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>simple</artifactId>
+            <version>0.30</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.ejml/denseC64 -->
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>denseC64</artifactId>
+            <version>0.30</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.ejml/equation -->
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>equation</artifactId>
+            <version>0.30</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+    </dependencies>
+</project>
