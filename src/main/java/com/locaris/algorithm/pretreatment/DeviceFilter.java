@@ -8,21 +8,19 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import com.locaris.algorithm.beans.Position;
-import com.locaris.algorithm.beans.TDOADataBean;
+import com.locaris.algorithm.beans.TDOALocBean;
 
 public class DeviceFilter {
 	private final long Max_TS = 1099511627776L;
 
 	/**
-	 * 对基站进行筛选，根据基站时间戳变化量。
-	 * 
-	 * @param oldData
-	 * @param newData
-	 * @return
+	 * 根据时间戳变化量对基站进行筛选
+	 * @param lastLocData
+	 * @param thisLocData
+	 * @param vpt
 	 */
-	public void nlosIdentify(HashMap<Long, TDOADataBean> lastLocData, HashMap<Long, TDOADataBean> thisLocData,
-			double vpt) {
+	public void nlosIdentify(HashMap<Long, TDOALocBean> lastLocData, HashMap<Long, TDOALocBean> thisLocData,
+							 double vpt) {
 		/**
 		 * 获取长度
 		 */
@@ -39,19 +37,19 @@ public class DeviceFilter {
 			if(!countFlag){
 				countFlag=true;
 				deviceidFirst = (Long) entry.getKey();
-				timeCompare= ((TDOADataBean) entry.getValue()).getTimeStamp();
+				timeCompare= ((TDOALocBean) entry.getValue()).getTimestamp();
 			}else{
-				TDOADataBean tdoaDataBean=(TDOADataBean) entry.getValue();
-				long temp = tdoaDataBean.getTimeStamp();
+				TDOALocBean tdoaDataBean=(TDOALocBean) entry.getValue();
+				long temp = tdoaDataBean.getTimestamp();
 				long tempLong = temp - timeCompare;// 获取时间戳变化
 				
 				if(Math.abs(tempLong)>Max_TS/2){
 					if(tempLong>0){
 						timeCompare+=Max_TS;
-						thisLocData.get(deviceidFirst).setTimeStamp(timeCompare);
+						thisLocData.get(deviceidFirst).setTimestamp(timeCompare);
 					}else{
 						temp+=Max_TS;
-						tdoaDataBean.setTimeStamp(temp);
+						tdoaDataBean.setTimestamp(temp);
 					}
 				}
 			}
@@ -66,34 +64,31 @@ public class DeviceFilter {
 			if(!countFlag){
 				countFlag=true;
 				deviceidFirst = (Long) entry.getKey();
-				timeCompare= ((TDOADataBean) entry.getValue()).getTimeStamp();
+				timeCompare= ((TDOALocBean) entry.getValue()).getTimestamp();
 			}else{
-				TDOADataBean tdoaDataBean=(TDOADataBean) entry.getValue();
-				long temp = tdoaDataBean.getTimeStamp();
+				TDOALocBean tdoaDataBean=(TDOALocBean) entry.getValue();
+				long temp = tdoaDataBean.getTimestamp();
 				long tempLong = temp - timeCompare;// 获取时间戳变化
 				if(Math.abs(tempLong)>Max_TS/2){
 					if(tempLong>0){
 						timeCompare+=Max_TS;
-						lastLocData.get(deviceidFirst).setTimeStamp(timeCompare);
+						lastLocData.get(deviceidFirst).setTimestamp(timeCompare);
 					}else{
 						temp+=Max_TS;
-						tdoaDataBean.setTimeStamp(temp);
+						tdoaDataBean.setTimestamp(temp);
 					}
 				}
 			}
 		}
-		
-		
 		HashMap<Long, Long> locDataSame = new HashMap<Long, Long>();
 		iterator = thisLocData.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Entry entry = (Entry) iterator.next();
 			long deviceID = (Long) entry.getKey();
 			if (lastLocData.containsKey(deviceID)) {
-				TDOADataBean tdoaDataBean = (TDOADataBean) entry.getValue();
-				tdoaDataBean.setLastUse(true);
-				long thisTimestamp = tdoaDataBean.getTimeStamp();
-				long tempLong = thisTimestamp - lastLocData.get(deviceID).getTimeStamp();// 获取时间戳变化
+				TDOALocBean tdoaDataBean = (TDOALocBean) entry.getValue();
+				long thisTimestamp = tdoaDataBean.getTimestamp();
+				long tempLong = thisTimestamp - lastLocData.get(deviceID).getTimestamp();// 获取时间戳变化
 				if (Math.abs(tempLong) > Max_TS / 2) {
 					if (tempLong > 0) {
 						tempLong = tempLong - Max_TS;
@@ -141,55 +136,6 @@ public class DeviceFilter {
 		}
 	}
 
-	/**
-	 * 根据原始数据获取距离本标签最近的基站s。
-	 * 
-	 * @param thisLocData
-	 * @param vpt
-	 * @return
-	 */
-	public HashSet<Long> selectReferencePoints(HashMap<Long, TDOADataBean> thisLocData,
-			HashMap<Long, HashSet<Long>> deviceTags, double vpt) {
-		HashSet<Long> hashSet = new HashSet<Long>();
-		HashSet<Long> nearDevice = new HashSet<Long>();
-		long mindata = -1;
-		Iterator<Entry<Long, TDOADataBean>> iterator = thisLocData.entrySet().iterator();
-		while (iterator.hasNext()) {
-			Entry<Long, TDOADataBean> entry = iterator.next();
-			TDOADataBean tdoaDataBean = entry.getValue();
-			long timestamp = tdoaDataBean.getTimeStamp();
-			if (mindata == -1) {
-				mindata = timestamp;
-			} else if (mindata > timestamp) {
-				mindata = timestamp;
-			}
-		}
-		/**
-		 * 获取距离合适的基站。
-		 */
-		iterator = thisLocData.entrySet().iterator();
-		while (iterator.hasNext()) {
-			Entry<Long, TDOADataBean> entry = iterator.next();
-			TDOADataBean tdoaDataBean = entry.getValue();
-			if ((tdoaDataBean.getTimeStamp() - mindata) <= vpt) {
-				nearDevice.add(entry.getKey());
-				// System.out.println("筛选基站ID："+Long.toHexString(entry.getKey()));
-				// System.out.println("对应虚拟参考点ID"+deviceTags.get(entry.getKey()));
-			}
-		}
-		/**
-		 * 返回所有参考点。
-		 */
-
-		for (Iterator it = nearDevice.iterator(); it.hasNext();) {
-			HashSet<Long> h = deviceTags.get(it.next());
-			if (h != null) {
-				hashSet.addAll(h);
-			}
-		}
-
-		return hashSet;
-	}
 
 	/**
 	 * 基站筛选----->根据基站间距离以及基站间角度进行基站过滤

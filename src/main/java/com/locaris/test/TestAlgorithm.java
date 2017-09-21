@@ -1,11 +1,6 @@
 package com.locaris.test;
 
-import Jama.Matrix;
 import org.junit.Test;
-import com.locaris.algorithm.beans.Position;
-import com.locaris.algorithm.filter.LocationFilter;
-import com.locaris.algorithm.location.TDOAAlgorithm;
-import com.locaris.algorithm.location.TOFAlgorithm;
 
 public class TestAlgorithm {
 

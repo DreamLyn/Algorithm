@@ -10,22 +10,9 @@ import org.ejml.simple.SimpleMatrix;
 
 import com.locaris.algorithm.beans.Position;
 
-//import Jama.Matrix;
-
 public class TDOAAlgorithm implements TDOAAlgorithmInterface {
-	// rdif，一列，为4个据差值
-	// devicePosition 第一列：X坐标
-	// 第二列：Y坐标
-	// 第三列：Z坐标
-	// 第四列：平方和
+
 	@Override
-	/**********************************************************************************************************
-	 ** 函数名字 : chenTDOA 功能描述 : 基于chen的TDOA定位算法 作者 : yanan.li huijun.zhang 修改日志 :
-	 * 2017.3.24 采用了EJML矩阵运算库，重新翻译chen定位算法 2017.3.27 完成了调试 输 入 : rdif 距差值（维数4×1）
-	 ** : devicePosition 基站坐标值（维数5*4,前三列分别为X,Y,Z坐标） : z_hat 标签预置的高度 输 出 :
-	 * Position 标签坐标
-	 * 
-	 *********************************************************************************************************/
 	public Position chenTDOA(double[][] rdif, double[][] devicePosition, double z_hat) {
 		// TODO Auto-generated method stub
 
@@ -235,13 +222,8 @@ public class TDOAAlgorithm implements TDOAAlgorithmInterface {
 			// 定位的最终结果
 			double TagX = u[0] + xcalib;
 			double TagY = u[1] + ycalib;
-
 			position.setX(TagX);
 			position.setY(TagY);
-			position.setGridx_min(TagX-0.5);
-			position.setGridx_max(TagX+0.5);
-			position.setGridy_min(TagY-0.5);
-			position.setGridy_max(TagY+0.5);
 			return position;
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -268,14 +250,8 @@ public class TDOAAlgorithm implements TDOAAlgorithmInterface {
 		return position;
 	}
 
+
 	@Override
-	/**********************************************************************************************************
-	 ** 函数名字 : srdTDOA 功能描述 : 基于srd的TDOA定位算法 作者 : huijun.zhang 修改日志 : 2017.3.23
-	 * 初始版本，和C版本1.1.01一致 : 2017.3.24 增加了部分注释，去除了没有用到的变量，Rdif，alpha2 输 入 : rdif
-	 * 距差值（维数3×1） : devicePosition 基站坐标值（维数4*4,前三列分别为X,Y,Z坐标） : z_hat 标签预置的高度 输
-	 * 出 : Position 标签坐标
-	 * 
-	 *********************************************************************************************************/
 	public Position srdTDOA(double[][] rdif, double[][] devicePosition, double z_hat) {
 
 		// TODO Auto-generated method stub
@@ -706,10 +682,6 @@ public class TDOAAlgorithm implements TDOAAlgorithmInterface {
 			// 定位结果返回
 			position.setX(TagX);
 			position.setY(TagY);
-			position.setGridx_min(TagX-0.5);
-			position.setGridx_max(TagX+0.5);
-			position.setGridy_min(TagY-0.5);
-			position.setGridy_max(TagY+0.5);
 			return position;
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -719,162 +691,6 @@ public class TDOAAlgorithm implements TDOAAlgorithmInterface {
 	}
 
 	@Override
-	public Position oneDim(double rdif, double[][] devicePosition, double z_hat) {
-		// TODO Auto-generated method stub
-		double x1 = devicePosition[0][0];
-		double y1 = devicePosition[0][1];
-		double z1 = devicePosition[0][2];
-		double x2 = devicePosition[1][0];
-		double y2 = devicePosition[1][1];
-		double z2 = devicePosition[1][2];
-		double x21 = devicePosition[1][0] - devicePosition[0][0];
-		double y21 = devicePosition[1][1] - devicePosition[0][1];
-		double z21 = devicePosition[1][2] - devicePosition[0][2];
-		double k1 = devicePosition[0][3];
-		double k2 = devicePosition[1][3];
-		int delta = 100;
-		float delta_ratio = 0.0035f;
-		double dist_device = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-		double delta_th = Math.abs(x21) / dist_device;
-		float nearBSDgree = 0.7f;
-		///////////
-		if (delta_th > delta_ratio) {
-			double a = y21 / x21;
-			double b = y1 - a * x1;
-			double deltah = z_hat - z1;
-			double p = -2 * y21 * b - 2 * z21 * z_hat + k2 - k1 - rdif * rdif;
-			double q = -2 * (x21 + a * y21);
-
-			double A = 4 * rdif * rdif + 4 * rdif * rdif * a * a - q * q;
-			double B = 4 * rdif * 2 * a * (b - y1) - 4 * rdif * rdif * 2 * x1 - 2 * p * q;
-			double C = 4 * rdif * rdif * (x1 * x1 + (b - y1) * (b - y1) + deltah * deltah) - p * p;
-
-			double distBS = Math.sqrt(x21 * x21 + y21 * y21);
-
-			if ((B * B - 4 * A * C) >= 0) {
-				/**
-				 * 有解
-				 */
-				double ux1 = (-B + Math.sqrt(B * B - 4 * A * C)) / (2 * A);
-				double uy1 = a * ux1 + b;
-				double distTB11 = Math
-						.sqrt((ux1 - x1) * (ux1 - x1) + (uy1 - y1) * (uy1 - y1) + (z_hat - z1) * (z_hat - z1));
-				double distTB12 = Math
-						.sqrt((ux1 - x2) * (ux1 - x2) + (uy1 - y2) * (uy1 - y2) + (z_hat - z2) * (z_hat - z2));
-				double r21_u1 = distTB12 - distTB11;
-				//// 第二个解
-				double ux2 = (-B - Math.sqrt(B * B - 4 * A * C)) / (2 * A);
-				double uy2 = a * ux2 + b;
-				double distTB21 = Math
-						.sqrt((ux2 - x1) * (ux2 - x1) + (uy2 - y1) * (uy2 - y1) + (z_hat - z1) * (z_hat - z1));
-				double distTB22 = Math
-						.sqrt((ux2 - x2) * (ux2 - x2) + (uy2 - y2) * (uy2 - y2) + (z_hat - z2) * (z_hat - z2));
-				double r21_u2 = distTB22 - distTB21;
-
-				if (Math.abs(Math.abs(rdif) - distBS) > nearBSDgree) {
-					double error1 = Math.abs(r21_u1 - rdif);
-					double error2 = Math.abs(r21_u2 - rdif);
-					if (error1 < error2) {
-						Position position = new Position();
-						position.setX(ux1);
-						position.setY(uy1);
-						position.setGridx_min(ux1-0.5);
-						position.setGridx_max(ux1+0.5);
-						position.setGridy_min(uy1-0.5);
-						position.setGridy_max(uy1+0.5);
-						return position;
-					} else {
-						Position position = new Position();
-						position.setX(ux2);
-						position.setY(uy2);
-						position.setGridx_min(ux2-0.5);
-						position.setGridx_max(ux2+0.5);
-						position.setGridy_min(uy2-0.5);
-						position.setGridy_max(uy2+0.5);
-						return position;
-					}
-				} else {
-					return null;
-				}
-
-			} else {
-				System.out.println("Error: there is not estimation solution.");
-			}
-
-		} else {
-			// delta_th>delta_ratio
-
-			double deltah = z_hat - z1;
-			double p = k2 - k1 - rdif * rdif - 2 * z21 * z_hat;
-
-			double A = 4 * rdif * rdif + 4 * y21 * y21;
-			double B = 4 * y21 * p - 8 * rdif * rdif * y1;
-			double C = 4 * rdif * rdif * y1 * y1 + 4 * rdif * rdif * deltah * deltah - p * p;
-
-			double distBS = Math.sqrt(x21 * x21 + y21 * y21);
-
-			if ((B * B - 4 * A * C) >= 0) {
-				/**
-				 * 有解
-				 */
-				double ux1 = (-B + Math.sqrt(B * B - 4 * A * C)) / (2 * A);
-				double uy1 = ux1;
-				double distTB11 = Math
-						.sqrt((ux1 - x1) * (ux1 - x1) + (uy1 - y1) * (uy1 - y1) + (z_hat - z1) * (z_hat - z1));
-				double distTB12 = Math
-						.sqrt((ux1 - x2) * (ux1 - x2) + (uy1 - y2) * (uy1 - y2) + (z_hat - z2) * (z_hat - z2));
-				double r21_u1 = distTB12 - distTB11;
-				//// 第二个解
-				double ux2 = (-B - Math.sqrt(B * B - 4 * A * C)) / (2 * A);
-				double uy2 = ux2;
-				double distTB21 = Math
-						.sqrt((ux2 - x1) * (ux2 - x1) + (uy2 - y1) * (uy2 - y1) + (z_hat - z1) * (z_hat - z1));
-				double distTB22 = Math
-						.sqrt((ux2 - x2) * (ux2 - x2) + (uy2 - y2) * (uy2 - y2) + (z_hat - z2) * (z_hat - z2));
-				double r21_u2 = distTB22 - distTB21;
-
-				if (Math.abs(Math.abs(rdif) - distBS) > nearBSDgree) {
-					double error1 = Math.abs(r21_u1 - rdif);
-					double error2 = Math.abs(r21_u2 - rdif);
-					if (error1 < error2) {
-						Position position = new Position();
-						position.setX(ux1);
-						position.setY(uy1);
-						position.setGridx_min(ux1-0.5);
-						position.setGridx_max(ux1+0.5);
-						position.setGridy_min(uy1-0.5);
-						position.setGridy_max(uy1+0.5);
-						return position;
-					} else {
-						Position position = new Position();
-						position.setX(ux2);
-						position.setY(uy2);
-						position.setGridx_min(ux2-0.5);
-						position.setGridx_max(ux2+0.5);
-						position.setGridy_min(uy2-0.5);
-						position.setGridy_max(uy2+0.5);
-						return position;
-					}
-				} else {
-					return null;
-				}
-			} else {
-				System.out.println("Error: there is not estimation solution.");
-			}
-		}
-		return null;
-	}
-	
-	
-	
-	@Override
-	/**********************************************************************************************************
-	 ** 函数名字 : LnOneDim  
-	 *  功能描述 : 用于狭长（long and narrow）环境的两基站一维TDOA定位（替代oneDim算法）
-	 *  作者       : huijun.zhang
-	 *  修改日志 : 2017.5.04
-	 *  
-	 *********************************************************************************************************/
 	public Position LnOneDim(double rdif, double[][] devicePosition,
 			double z_hat) {
 		// TODO Auto-generated method stub
@@ -1017,10 +833,6 @@ public class TDOAAlgorithm implements TDOAAlgorithmInterface {
 			}
 			position.setX(xopt);
 			position.setY(yopt);
-			position.setGridx_min(xopt - 0.5);
-			position.setGridx_max(xopt + 0.5);
-			position.setGridy_min(yopt - 0.5);
-			position.setGridy_max(yopt + 0.5);
 			return position;
 
 		} else {
